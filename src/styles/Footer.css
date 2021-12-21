@@ -1,9 +1,5 @@
 .Footer {
-  position: absolute;
-  top: 85%;
-  left: 0;
-  right: 0;
-  margin: 2.5% auto auto auto;
+  margin: 3rem auto;
   width: max-content;
   font-size: 0.9rem;
   font-weight: bold;

@@ -30,6 +30,7 @@ function App() {
 
   useEffect(() => {
     function makeRequest(position) {
+      setContentState("loading");
       getAddressOfCoordinates(
         position.coords.latitude,
         position.coords.longitude
@@ -56,7 +57,6 @@ function App() {
     }
 
     if (navigator.geolocation) {
-      setContentState("loading");
       navigator.geolocation.getCurrentPosition(makeRequest, catchError);
     } else {
       alert("Geolocation is not supported by this browser.");
@@ -115,8 +115,10 @@ function App() {
   return (
     <div className="App">
       <div className="App__container">
-        <Header searchCity={searchCity} />
-        {Main[contentState]()}
+        <>
+          <Header searchCity={searchCity} />
+          {Main[contentState]()}
+        </>
         <Footer />
       </div>
     </div>

@@ -1,13 +1,41 @@
-<h1> React Weather App </h2>
+# React Weather App
 
-<p> Aplicação em ReactJS de previsão do tempo utilizando as APIS openweathermap e opencagedata. È possível pesquisar por locais e ver o clima e previsão do tempo deste local </p>
+## Table of contents
 
-<p> Acesse-o aqui: </p>
+- [Status](#status)
+- [Description](#description)
+- [Screenshot](#screenshot)
+- [Demonstration](#demonstrations)
+- [Technologies](#technologies)
+- [Author](#author)
+- [License](#license)
 
-<a href="https://react-weather-app-augusto-ravazoli.vercel.app/">
-https://react-weather-app-augusto-ravazoli.vercel.app/
-</a>
+## Status
 
-<h2> Screenshot </h2>
+Published!
 
-<img src="./screenshot.png" alt="screenshot">
+## Description
+
+A React weather and forecast app, it's possible to search locations and see the climatic conditions of the location, like wind speed, temperature, rain and more.
+
+## Screenshot
+
+![](screenshot.png)
+
+## Demonstration
+
+[https://react-weather-app-augusto-ravazoli.vercel.app/](https://react-weather-app-augusto-ravazoli.vercel.app/)
+
+## Technologies
+
+- [ReactJS](https://reactjs.org/)
+- [WeatherAPI](https://openweathermap.org/)
+- [GeocodingAPI](https://opencagedata.com/)
+
+## Author
+
+- Website - [Augusto Ravazoli](https://augustoravazoli.github.io/)
+
+## License
+
+This project is under [MIT LICENSE](./LICENSE).

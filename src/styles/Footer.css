@@ -1,0 +1,25 @@
+.Footer {
+  position: absolute;
+  top: 85%;
+  left: 0;
+  right: 0;
+  margin: 2.5% auto auto auto;
+  width: max-content;
+  font-size: 0.9rem;
+  font-weight: bold;
+  text-align: center;
+}
+
+.Footer p {
+  display: flex;
+  align-items: center;
+}
+
+.Footer img {
+  height: 22px;
+  width: 22px;
+}
+
+.Footer a {
+  color: inherit;
+}

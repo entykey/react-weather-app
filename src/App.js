@@ -1,158 +1,126 @@
 import React, { useState, useEffect } from "react";
-import Header from "./components/Header/Header";
-import Main from "./components/Main/Main";
 
-import axios from "axios";
+import Header from "./components/Header";
+import WeatherAndForecast from "./components/WeatherAndForecast";
+import Footer from "./components/Footer";
+import Loader from "./components/Loader";
+import Warning from "./components/Warning";
 
-import "./app.css";
+import getAddressOfCoordinates from "./api/reverseGeocoding";
+import getCoordinatesOfAddress from "./api/forwardGeocoding";
+import getWeatherAndForecast from "./api/weatherAndForecast";
 
-export default function App() {
-  const [city, setCity] = useState("");
-  const [coordinates, setCoordinates] = useState(undefined);
-  const [location, setLocation] = useState({});
-  const [date, setDate] = useState([]);
-  const [weatherInfo, setWeatherInfo] = useState({});
+import "./styles/App.css";
+
+function App() {
+  const [address, setAddress] = useState("");
+  const [coordinates, setCoordinates] = useState({});
+  const [weatherAndForecastInfo, setWeatherAndForecastInfo] = useState({});
+  const [locationInfo, setLocationInfo] = useState({});
   const [contentState, setContentState] = useState("blank");
-  const [loaderVisibility, setLoaderVisibility] = useState(false);
-  const [loader, setLoader] = useState(undefined);
 
   function searchCity(target) {
-    setCity(target);
-    setDate(dateBuilder(new Date()));
-    setLoaderVisibility(true);
+    setAddress(target);
+  }
+
+  function showWarning() {
+    setContentState("warning");
+    setTimeout(() => setContentState("blank"), 3000);
   }
 
   useEffect(() => {
-    if (city !== "" && loaderVisibility) {
-      setContentState("blank");
-      setLoader(<div className="loading"></div>);
-      axios
-        .get("https://api.opencagedata.com/geocode/v1/json? ", {
-          params: {
-            key: process.env.REACT_APP_OPEN_CAGE_API_KEY,
-            q: city
-          }
+    function makeRequest(position) {
+      getAddressOfCoordinates(
+        position.coords.latitude,
+        position.coords.longitude
+      )
+        .then((res) => {
+          setLocationInfo({
+            city: res.data.results[0].components.city_district,
+            town: res.data.results[0].components.town,
+            state: res.data.results[0].components.state_code,
+            country: res.data.results[0].components.country_code
+          });
         })
-        .then((response) => {
-          if (
-            response.data.results.length === 0 ||
-            (response.data.results[0].components.city === undefined &&
-              response.data.results[0].components.town === undefined)
-          ) {
-            setLoader(null);
-            setCoordinates(undefined);
-            setContentState("warning");
-            setTimeout(() => {
-              if (contentState === "warning" || contentState === "blank")
-                setContentState("blank");
-            }, 5000);
-          } else {
-            setCoordinates(response.data.results[0].geometry);
-            setLocation({
-              city: response.data.results[0].components.city,
-              town: response.data.results[0].components.town,
-              state: response.data.results[0].components.state_code,
-              country: response.data.results[0].components.country_code
-            });
-          }
-        })
-        .catch((error) => {
-          catchError(error);
-          setLoader(null);
-          setCoordinates(undefined);
-          setContentState("warning");
-          setTimeout(() => {
-            if (contentState === "warning" || contentState === "blank")
-              setContentState("blank");
-          }, 5000);
-        });
-      setLoaderVisibility(false);
+        .then(() =>
+          setCoordinates({
+            lat: position.coords.latitude,
+            lng: position.coords.longitude
+          })
+        )
+        .catch((error) => showWarning());
     }
-  }, [city, loaderVisibility, loader, contentState]);
+
+    function catchError(err) {
+      alert("ERROR(" + err.code + "): " + err.message);
+    }
+
+    if (navigator.geolocation) {
+      setContentState("loading");
+      navigator.geolocation.getCurrentPosition(makeRequest, catchError);
+    } else {
+      alert("Geolocation is not supported by this browser.");
+    }
+  }, []);
 
   useEffect(() => {
-    if (coordinates !== undefined) {
-      axios
-        .get("https://api.openweathermap.org/data/2.5/onecall?", {
-          params: {
-            lat: coordinates.lat,
-            lon: coordinates.lng,
-            exclude: "minutely,hourly,alerts",
-            appid: process.env.REACT_APP_OPEN_WEATHER_API_KEY,
-            units: "metric"
-          }
-        })
-        .then((response) => {
-          setLoader(null);
-          setWeatherInfo(response.data);
-          setContentState("weather");
-        })
-        .catch((error) => catchError(error));
-    }
+    if (address === "") return;
+
+    setContentState("loading");
+    getCoordinatesOfAddress(address)
+      .then((res) => {
+        if (
+          res.data.results.length === 0 ||
+          (res.data.results[0].components.city === undefined &&
+            res.data.results[0].components.town === undefined)
+        ) {
+          showWarning();
+          return;
+        }
+
+        setCoordinates(res.data.results[0].geometry);
+        setLocationInfo({
+          city: res.data.results[0].components.city,
+          town: res.data.results[0].components.town,
+          state: res.data.results[0].components.state_code,
+          country: res.data.results[0].components.country_code
+        });
+      })
+      .catch((error) => showWarning());
+  }, [address]);
+
+  useEffect(() => {
+    if (Object.keys(coordinates).length === 0) return;
+
+    getWeatherAndForecast(coordinates)
+      .then((res) => {
+        setWeatherAndForecastInfo(res.data);
+        setContentState("weatherAndForecast");
+      })
+      .catch((error) => showWarning());
   }, [coordinates]);
 
-  function catchError(error) {
-    if (error.response) {
-      // Request made and server responded
-      console.log(error.response.data);
-      console.log(error.response.status);
-      console.log(error.response.headers);
-    } else if (error.request) {
-      // The request was made but no response was received
-      console.log(error.request);
-    } else {
-      // Something happened in setting up the request that triggered an Error
-      console.log("Error", error.message);
-    }
-  }
-
-  function dateBuilder(d) {
-    const days = [
-      "Sunday",
-      "Monday",
-      "Tuesday",
-      "Wednesday",
-      "Thursday",
-      "Friday",
-      "Saturday"
-    ];
-
-    const date = [];
-    
-    for (let count = 0; count < 5; count++) {
-      if (d.getDay() + count < 7)
-        date[count] = d.getDay() + count;
-      else if (d.getDay() + count === 7)
-        date[count] = 0;
-      else if (d.getDay() + count === 8)
-        date[count] = 1;
-      else if (d.getDay() + count === 9)
-        date[count] = 2;
-      else if (d.getDay() + count === 10)
-        date[count] = 3;
-    }
-
-    return [
-      days[date[0]],
-      days[date[1]],
-      days[date[2]],
-      days[date[3]],
-      days[date[4]]
-    ];
-  }
+  const Main = {
+    blank: () => null,
+    loading: () => <Loader />,
+    warning: () => <Warning />,
+    weatherAndForecast: () => (
+      <WeatherAndForecast
+        weatherInfo={weatherAndForecastInfo}
+        location={locationInfo}
+      />
+    )
+  };
 
   return (
     <div className="App">
       <div className="App__container">
-        <Header callBack={searchCity} />
-        {loader}
-        <Main
-          weatherInfo={weatherInfo}
-          location={location}
-          date={date}
-          contentState={contentState}
-        />
+        <Header searchCity={searchCity} />
+        {Main[contentState]()}
+        <Footer />
       </div>
     </div>
   );
 }
+
+export default App;

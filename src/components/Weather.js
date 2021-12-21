@@ -1,12 +1,13 @@
 import React from "react";
-import "./current.css";
+
+import "../styles/Weather.css";
 
 export default function Current({ weatherInfo, location, date }) {
   return (
-    <div className="Current">
-      <div className="Current__info">
+    <div className="Weather">
+      <div className="Weather__info">
         <img
-          className="Current__weather-icon"
+          className="Weather__icon"
           src={
             "https://openweathermap.org/img/wn/" +
             weatherInfo.current.weather[0].icon +
@@ -14,7 +15,7 @@ export default function Current({ weatherInfo, location, date }) {
           }
           alt={weatherInfo.current.weather[0].main}
         />
-        <ul className="Current__list">
+        <ul className="Weather__list">
           <li className="list__temperature">
             {Math.round(weatherInfo.current.temp)}
             <sup className="list__temperature-symbol">°C</sup>
@@ -26,7 +27,7 @@ export default function Current({ weatherInfo, location, date }) {
           </li>
         </ul>
       </div>
-      <div className="Current__other-info">
+      <div className="Weather__other-info">
         <h2 className="other-info__city">
           {location.city || location.town},{" "}
           {location.state || location.country.toUpperCase()}
